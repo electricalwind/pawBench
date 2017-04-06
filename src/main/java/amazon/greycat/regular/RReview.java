@@ -1,17 +1,10 @@
 package amazon.greycat.regular;
 
-import amazon.greycat.api.Product;
 import amazon.greycat.api.Review;
-import amazon.greycat.api.User;
-import greycat.*;
-import greycat.internal.task.TaskHelper;
-import greycat.plugin.SchedulerAffinity;
-import greycat.struct.Buffer;
-import greycat.struct.IntArray;
+import greycat.Task;
+import greycat.Type;
 
-import static amazon.greycat.AmazonConstants.*;
 import static greycat.Tasks.newTask;
-import static mylittleplugin.MyLittleActions.ifEmptyThen;
 
 public class RReview extends Review {
 

@@ -5,8 +5,6 @@ import greycat.internal.task.TaskHelper;
 import greycat.plugin.SchedulerAffinity;
 import greycat.struct.Buffer;
 import greycat.struct.IntArray;
-import paw.greycat.actions.Pawctions;
-import paw.tokeniser.tokenisation.TokenizerType;
 
 import static amazon.greycat.AmazonConstants.*;
 import static greycat.Tasks.newTask;

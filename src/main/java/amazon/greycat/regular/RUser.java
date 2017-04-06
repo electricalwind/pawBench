@@ -5,12 +5,7 @@ import greycat.Task;
 import greycat.Type;
 
 import static amazon.greycat.AmazonConstants.*;
-import static greycat.Constants.BEGINNING_OF_TIME;
 import static greycat.Tasks.newTask;
-import static mylittleplugin.MyLittleActions.executeAtWorldAndTime;
-import static mylittleplugin.MyLittleActions.ifEmptyThen;
-import static mylittleplugin.MyLittleActions.readUpdatedTimeVar;
-import static paw.PawConstants.NODE_TYPE;
 
 public class RUser extends User{
 

@@ -7,9 +7,7 @@ import paw.PawConstants;
 import static amazon.greycat.AmazonConstants.*;
 import static greycat.Constants.BEGINNING_OF_TIME;
 import static greycat.Tasks.newTask;
-import static mylittleplugin.MyLittleActions.executeAtWorldAndTime;
-import static mylittleplugin.MyLittleActions.ifEmptyThen;
-import static mylittleplugin.MyLittleActions.readUpdatedTimeVar;
+import static mylittleplugin.MyLittleActions.*;
 import static paw.PawConstants.NODE_TYPE;
 
 public class Product {
