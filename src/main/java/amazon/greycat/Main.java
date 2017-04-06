@@ -2,18 +2,12 @@ package amazon.greycat;
 
 import amazon.greycat.api.Review;
 import amazon.greycat.paw.PReview;
-import amazon.greycat.regular.RReview;
-import amazon.greycat.regular.RUser;
-import greycat.Callback;
 import greycat.DeferCounter;
 import greycat.Graph;
 import greycat.GraphBuilder;
-import greycat.plugin.Job;
 import greycat.rocksdb.RocksDBStorage;
-import greycat.scheduler.NoopScheduler;
 import greycat.scheduler.TrampolineScheduler;
 
-import java.io.File;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
@@ -31,24 +25,24 @@ public class Main {
     public static void main(String[] args) {
         String urlMovies = "/Users/youradmin/Desktop/Programmation/utils/movies.txt";
 
-        Graph graphNT = new GraphBuilder()
-                .withMemorySize(1000000)
-                .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/RegularBench"))
-                .withScheduler(new TrampolineScheduler())
-                .build();
+        /** Graph graphNT = new GraphBuilder()
+         .withMemorySize(1000000)
+         .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/RegularBench"))
+         .withScheduler(new TrampolineScheduler())
+         .build();
 
 
-        graphNT.connect(result -> {
-            DeferCounter counter = graphNT.newCounter(1);
-            try {
-                Review review = new RReview();
-                addingContent(urlMovies, graphNT, 1000, counter,review);
-            } catch (IOException e) {
-                e.printStackTrace();
-                counter.count();
-            }
-            counter.then(() -> graphNT.disconnect(null));
-        });
+         graphNT.connect(result -> {
+         DeferCounter counter = graphNT.newCounter(1);
+         try {
+         Review review = new RReview();
+         addingContent(urlMovies, graphNT, 1000, counter, review);
+         } catch (IOException e) {
+         e.printStackTrace();
+         counter.count();
+         }
+         counter.then(() -> graphNT.disconnect(null));
+         });*/
 
         Graph graphP = new GraphBuilder()
                 .withMemorySize(1000000)
@@ -61,15 +55,13 @@ public class Main {
             DeferCounter counter = graphP.newCounter(1);
             try {
                 Review review = new PReview();
-                addingContent(urlMovies, graphP, 1000, counter,review);
+                addingContent(urlMovies, graphP, 1000, counter, review);
             } catch (IOException e) {
                 e.printStackTrace();
                 counter.count();
             }
             counter.then(() -> graphP.disconnect(null));
         });
-
-
 
 
     }
@@ -96,7 +88,6 @@ public class Main {
                 .setAsVar("i")
                 .whileDo(ctx -> sc.hasNext(),
                         newTask()
-
                                 .thenDo(ctx -> {
                                     ctx.setVariable("i", ctx.intVar("i") + 1);
                                     for (int i = 0; i < 9; i++) {
@@ -183,10 +174,10 @@ public class Main {
                                         newTask()
                                                 .thenDo(
                                                         ctx -> {
-                                                            if ((ctx.intVar("i") / saveEvery) % 100 == 0) {
+                                                            //if ((ctx.intVar("i")) % 100 == 0) {
                                                             long timeEnd = System.currentTimeMillis();
                                                             System.out.println("saved " + ctx.intVar("i") + " in " + (timeEnd - timeStart) + " ms");
-                                                             }
+                                                            // }
                                                             ctx.continueTask();
                                                         })
                                                 .save()

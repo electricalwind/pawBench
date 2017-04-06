@@ -1,42 +1,35 @@
 package amazon.greycat.paw;
 
-import amazon.greycat.api.Product;
 import amazon.greycat.api.Review;
-import amazon.greycat.api.User;
-import greycat.*;
-import greycat.internal.task.TaskHelper;
-import greycat.plugin.SchedulerAffinity;
-import greycat.struct.Buffer;
-import greycat.struct.IntArray;
-import paw.greycat.actions.Pawctions;
-import paw.tokeniser.tokenisation.TokenizerType;
+import greycat.Task;
+import paw.tokeniser.Tokenizer;
 
-import static amazon.greycat.AmazonConstants.*;
 import static greycat.Tasks.newTask;
-import static mylittleplugin.MyLittleActions.ifEmptyThen;
+import static paw.greycat.tasks.TokenizationTasks.setTypeOfToken;
+import static paw.greycat.tasks.TokenizedRelationTasks.updateOrCreateTokenizeRelationFromString;
 
 @SuppressWarnings("Duplicates")
 public class PReview extends Review {
 
-    public PReview(){
+    private final Tokenizer tokenizer;
+
+    public PReview() {
         this.user = new PUser();
+        this.tokenizer = ((PUser) user).tokenizer;
     }
 
     @Override
     protected Task handleSummaryAndText(String summary, String text) {
         return newTask()
                 .defineAsVar("reviewNode")
-                .then(Pawctions.createTokenizer("tokenizer", TokenizerType.ENGLISH, true))
+                .inject(tokenizer)
+                .defineAsVar("tokenizer")
 
-                .inject(summary)
-                .defineAsVar("toTokenize")
-                .then(Pawctions.setTypOfToken("tokenizer", "summary"))
 
-                .then(Pawctions.updateOrCreateTokenizeRelationFromVar("tokenizer", "reviewNode", "toTokenize", "summary"))
+                .pipe(setTypeOfToken("tokenizer", "summary"))
+                .pipe(updateOrCreateTokenizeRelationFromString("tokenizer", "reviewNode", summary, "summary"))
 
-                .inject(text)
-                .defineAsVar("toTokenize")
-                .then(Pawctions.setTypOfToken("tokenizer", "text"))
-                .then(Pawctions.updateOrCreateTokenizeRelationFromVar("tokenizer", "reviewNode", "toTokenize", "text"));
+                .pipe(setTypeOfToken("tokenizer", "text"))
+                .pipe(updateOrCreateTokenizeRelationFromString("tokenizer", "reviewNode", text, "text"));
     }
 }
