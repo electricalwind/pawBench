@@ -9,6 +9,7 @@ import greycat.struct.IntArray;
 import static amazon.greycat.AmazonConstants.*;
 import static greycat.Tasks.newTask;
 import static mylittleplugin.MyLittleActions.ifEmptyThen;
+import static paw.PawConstants.NODE_TYPE;
 
 public abstract class Review {
 
@@ -38,6 +39,7 @@ public abstract class Review {
                 .then(ifEmptyThen(
                         newTask()
                                 .createNode()
+                                .setAttribute(NODE_TYPE, Type.INT, NODE_TYPE_REVIEW)
                                 .thenDo(ctx -> {
                                     Node node = ctx.resultAsNodes().get(0);
                                     IntArray help = (IntArray) node.getOrCreate("helpfulness", Type.INT_ARRAY);
@@ -102,7 +104,7 @@ public abstract class Review {
             String uid = (String) ctx.variable(ctx.template(_uid)).get(0);
             String profileName = (String) ctx.variable(ctx.template(_profileName)).get(0);
             int helpfulnessIn = Integer.parseInt((String) ctx.variable(ctx.template(_helpfulnessIn)).get(0));
-            int helpfulnessOut = Integer.parseInt((String)ctx.variable(ctx.template(_helpfulnessOut)).get(0));
+            int helpfulnessOut = Integer.parseInt((String) ctx.variable(ctx.template(_helpfulnessOut)).get(0));
             double score = Double.parseDouble((String) ctx.variable(ctx.template(_score)).get(0));
             long time = Long.parseLong((String) ctx.variable(ctx.template(_time)).get(0));
             String summary = (String) ctx.variable(ctx.template(_summary)).get(0);

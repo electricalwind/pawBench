@@ -30,7 +30,7 @@ public class PUser extends User {
                 .defineAsVar("newUserNode")
                 .inject(tokenizer)
                 .defineAsVar("tokenizer")
-                .pipe(setTypeOfToken("tokenizer", "name"))
+                .pipe(setTypeOfToken("tokenizer", "username"))
                 .pipe(updateOrCreateTokenizeRelationFromString("tokenizer", "newUserNode", name, USER_NAME));
     }
 }

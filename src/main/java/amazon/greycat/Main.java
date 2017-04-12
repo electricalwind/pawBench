@@ -2,6 +2,7 @@ package amazon.greycat;
 
 import amazon.greycat.api.Review;
 import amazon.greycat.paw.PReview;
+import amazon.greycat.regular.RReview;
 import greycat.DeferCounter;
 import greycat.Graph;
 import greycat.GraphBuilder;
@@ -19,52 +20,62 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static greycat.Tasks.newTask;
+import static paw.greycat.tasks.VocabularyTasks.retrieveVocabularyNode;
 
 public class Main {
 
     public static void main(String[] args) {
         String urlMovies = "/Users/youradmin/Desktop/Programmation/utils/movies.txt";
 
-        /** Graph graphNT = new GraphBuilder()
-         .withMemorySize(1000000)
-         .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/RegularBench"))
-         .withScheduler(new TrampolineScheduler())
-         .build();
-
-
-         graphNT.connect(result -> {
-         DeferCounter counter = graphNT.newCounter(1);
-         try {
-         Review review = new RReview();
-         addingContent(urlMovies, graphNT, 1000, counter, review);
-         } catch (IOException e) {
-         e.printStackTrace();
-         counter.count();
-         }
-         counter.then(() -> graphNT.disconnect(null));
-         });*/
-
-        Graph graphP = new GraphBuilder()
+        Graph graphNT = new GraphBuilder()
                 .withMemorySize(1000000)
-                .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/PawBench"))
+                .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/RegularBench"))
                 .withScheduler(new TrampolineScheduler())
                 .build();
 
 
-        graphP.connect(result -> {
-            DeferCounter counter = graphP.newCounter(1);
+        graphNT.connect(result -> {
+            DeferCounter counter = graphNT.newCounter(1);
             try {
-                Review review = new PReview();
-                addingContent(urlMovies, graphP, 1000, counter, review);
+                Review review = new RReview();
+                addingContent(urlMovies, graphNT, 10000, counter, review);
             } catch (IOException e) {
                 e.printStackTrace();
                 counter.count();
             }
-            counter.then(() -> graphP.disconnect(null));
+            counter.then(() -> graphNT.disconnect(null));
         });
+
+        /** Graph graphP = new GraphBuilder()
+         .withMemorySize(1000000)
+         .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/PawBench"))
+         .withScheduler(new TrampolineScheduler())
+         .build();
+
+
+         graphP.connect(result -> {
+         DeferCounter counter = graphP.newCounter(1);
+         try {
+         Review review = new PReview();
+         addingContent(urlMovies, graphP, 10000, counter, review);
+         } catch (IOException e) {
+         e.printStackTrace();
+         counter.count();
+         }
+         counter.then(() -> graphP.disconnect(null));
+         });*/
 
 
     }
+
+    private static Pattern regexpProductId = Pattern.compile("product/productId: ([A-Za-z0-9]*)");
+    private static Pattern regexpUserId = Pattern.compile("review/userId: ([A-Za-z0-9]*)");
+    private static Pattern regexpProfile = Pattern.compile("review/profileName: (.*)");
+    private static Pattern regexpHelpfulness = Pattern.compile("review/helpfulness: ([0-9]*)/([0-9]*)");
+    private static Pattern regexpScore = Pattern.compile("review/score: ([0-9.]*)");
+    private static Pattern regexpTime = Pattern.compile("review/time: ([0-9]*)");
+    private static Pattern regexpSummary = Pattern.compile("review/summary: (.*)");
+    private static Pattern regexpText = Pattern.compile("review/text: (.*)");
 
 
     private static void addingContent(String urlMovies, Graph graph, int saveEvery, DeferCounter counter, Review review) throws IOException {
@@ -72,15 +83,6 @@ public class Main {
         Stream<String> lines = Files.lines(path, StandardCharsets.ISO_8859_1);
         Iterator<String> sc = lines.iterator();
         long timeStart = System.currentTimeMillis();
-
-        Pattern regexpProductId = Pattern.compile("product/productId: ([A-Za-z0-9]*)");
-        Pattern regexpUserId = Pattern.compile("review/userId: ([A-Za-z0-9]*)");
-        Pattern regexpProfile = Pattern.compile("review/profileName: (.*)");
-        Pattern regexpHelpfulness = Pattern.compile("review/helpfulness: ([0-9]*)/([0-9]*)");
-        Pattern regexpScore = Pattern.compile("review/score: ([0-9.]*)");
-        Pattern regexpTime = Pattern.compile("review/time: ([0-9]*)");
-        Pattern regexpSummary = Pattern.compile("review/summary: (.*)");
-        Pattern regexpText = Pattern.compile("review/text: (.*)");
 
 
         newTask()
@@ -91,10 +93,14 @@ public class Main {
                                 .thenDo(ctx -> {
                                     ctx.setVariable("i", ctx.intVar("i") + 1);
                                     for (int i = 0; i < 9; i++) {
+                                        Matcher matcher;
+                                        boolean find;
+                                        String summary;
+                                        String text;
                                         String line = sc.next();
                                         switch (i) {
                                             case 0:
-                                                Matcher matcher = regexpProductId.matcher(line);
+                                                matcher = regexpProductId.matcher(line);
                                                 matcher.find();
                                                 ctx.setVariable("pid", matcher.group(1));
                                                 break;
@@ -109,7 +115,7 @@ public class Main {
                                                 ctx.setVariable("profileName", matcher.group(1));
                                                 break;
                                             case 3:
-                                                boolean find = regexpHelpfulness.matcher(line).find();
+                                                find = regexpHelpfulness.matcher(line).find();
                                                 while (!find) {
                                                     String profileName = (String) ctx.variable("profileName").get(0);
                                                     ctx.setVariable("profileName", profileName + "\\n" + line);
@@ -135,7 +141,7 @@ public class Main {
                                             case 6:
                                                 matcher = regexpSummary.matcher(line);
                                                 matcher.find();
-                                                String summary = matcher.group(1);
+                                                summary = matcher.group(1);
                                                 summary = summary.replace("<br /><br />", " ");
                                                 summary = summary.replace("<br />", " ");
                                                 ctx.setVariable("summary", summary);
@@ -151,7 +157,7 @@ public class Main {
                                                 }
                                                 matcher = regexpText.matcher(line);
                                                 matcher.find();
-                                                String text = matcher.group(1);
+                                                text = matcher.group(1);
                                                 text = text.replace("<br /><br />", " ");
                                                 text = text.replace("<br />", " ");
                                                 ctx.setVariable("text", text);
@@ -171,12 +177,15 @@ public class Main {
                                 .then(review.addReview("pid", "uid", "profileName", "helpfulnessIn", "helpfulnessOut", "score", "time", "summary", "text"))
                                 .ifThen(
                                         ctx -> (ctx.intVar("i") % saveEvery == 0),
-                                        newTask()
+                                        newTask().pipe(retrieveVocabularyNode())
                                                 .thenDo(
                                                         ctx -> {
                                                             //if ((ctx.intVar("i")) % 100 == 0) {
                                                             long timeEnd = System.currentTimeMillis();
+
                                                             System.out.println("saved " + ctx.intVar("i") + " in " + (timeEnd - timeStart) + " ms");
+                                                            // Node node = ctx.resultAsNodes().get(0);
+                                                            // System.out.println(((RelationIndexed) node.get(RELATION_INDEX_VOCABULARY_TO_TOKENINDEX)).size());
                                                             // }
                                                             ctx.continueTask();
                                                         })
@@ -186,6 +195,7 @@ public class Main {
                 .save()
                 .execute(graph,
                         taskRes -> {
+                            taskRes.exception().printStackTrace();
                             System.out.println(taskRes.exception());
                             long timeEnd = System.currentTimeMillis();
                             System.out.println("time to add everything: " + (timeEnd - timeStart));
