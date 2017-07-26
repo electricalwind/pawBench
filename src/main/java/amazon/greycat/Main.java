@@ -26,7 +26,6 @@ import static greycat.Tasks.newTask;
 public class Main {
 
     public static void main(String[] args) {
-        String urlMovies = "/Users/youradmin/Desktop/Programmation/utils/movies.txt";
 
         /**Graph graphNT = new GraphBuilder()
          .withMemorySize(1000000)
@@ -47,11 +46,12 @@ public class Main {
          counter.then(() -> graphNT.disconnect(null));
          });*/
 
-        if (args.length!=1) throw new RuntimeException("not right number of element");
-        String path = args[0];
+        if (args.length!=2) throw new RuntimeException("not right number of element");
+        String pathSave = args[0];
+        String urlMovies = args[1];
         Graph graphP = new GraphBuilder()
                 .withMemorySize(200000)
-                .withStorage(new RocksDBStorage(path))
+                .withStorage(new RocksDBStorage(pathSave))
                 .withPlugin(new PawPlugin())
                 .withPlugin(new MyLittleActionPlugin())
                 .withScheduler(new HybridScheduler())

@@ -29,6 +29,7 @@
                     <arguments>
                         <argument>/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/PawBench
                         </argument>
+                        <argument>/Users/youradmin/Desktop/Programmation/utils/movies.txt</argument>
                     </arguments>
                 </configuration>
             </plugin>
