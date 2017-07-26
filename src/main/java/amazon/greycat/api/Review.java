@@ -14,8 +14,6 @@ import static paw.PawConstants.NODE_TYPE;
 public abstract class Review {
 
 
-    protected User user;
-
     public Task addReview(String pid,
                           String uid,
                           String profileName,
@@ -27,7 +25,7 @@ public abstract class Review {
                           String text) {
         return newTask()
                 .travelInTime("" + time)
-                .pipe(user.getOrCreateUser(uid, profileName))
+                .pipe(User.getOrCreateUser(uid, profileName))
                 .defineAsVar("user")
                 .thenDo(ctx -> {
                     ctx.setVariable("uid", "[" + ctx.resultAsNodes().get(0).id() + "]");
@@ -39,6 +37,7 @@ public abstract class Review {
                 .then(ifEmptyThen(
                         newTask()
                                 .createNode()
+                                .defineAsVar("newReview")
                                 .setAttribute(NODE_TYPE, Type.INT, NODE_TYPE_REVIEW)
                                 .thenDo(ctx -> {
                                     Node node = ctx.resultAsNodes().get(0);
@@ -47,15 +46,16 @@ public abstract class Review {
                                     ctx.continueTask();
                                 })
                                 .setAttribute("score", Type.DOUBLE, "" + score)
-                                .addVarToRelation(REVIEW_PRODUCT, "product")
-                                .addVarToRelation(REVIEW_USER, "user")
+                                .addVarTo(REVIEW_PRODUCT, "product")
+                                .addVarTo(REVIEW_USER, "user")
                                 .pipe(handleSummaryAndText(summary, text))
-                                .defineAsVar("newReview")
 
                                 .readVar("user")
-                                .addVarToRelation(RELATION_INDEX_USER_TO_REVIEW, "newReview", REVIEW_PRODUCT)
+                                .declareLocalIndex(RELATION_INDEX_USER_TO_REVIEW, REVIEW_PRODUCT)
+                                .addVarTo(RELATION_INDEX_USER_TO_REVIEW, "newReview")
                                 .readVar("product")
-                                .addVarToRelation(RELATION_INDEX_PRODUCT_TO_REVIEW, "newReview", REVIEW_USER)
+                                .declareLocalIndex(RELATION_INDEX_PRODUCT_TO_REVIEW, REVIEW_USER)
+                                .addVarTo(RELATION_INDEX_PRODUCT_TO_REVIEW, "newReview")
                                 .readVar("newReview"))
                 );
     }
@@ -151,6 +151,11 @@ public abstract class Review {
             builder.writeChar(Constants.TASK_PARAM_SEP);
             TaskHelper.serializeString(_text, builder, true);
             builder.writeChar(Constants.TASK_PARAM_CLOSE);
+        }
+
+        @Override
+        public String name() {
+            return null;
         }
     }
 

@@ -2,12 +2,13 @@ package amazon.greycat;
 
 import amazon.greycat.api.Review;
 import amazon.greycat.paw.PReview;
-import amazon.greycat.regular.RReview;
 import greycat.DeferCounter;
 import greycat.Graph;
 import greycat.GraphBuilder;
 import greycat.rocksdb.RocksDBStorage;
 import greycat.scheduler.TrampolineScheduler;
+import mylittleplugin.MyLittleActionPlugin;
+import paw.graph.PawPlugin;
 
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
@@ -20,52 +21,72 @@ import java.util.regex.Pattern;
 import java.util.stream.Stream;
 
 import static greycat.Tasks.newTask;
-import static paw.greycat.tasks.VocabularyTasks.retrieveVocabularyNode;
 
 public class Main {
 
     public static void main(String[] args) {
         String urlMovies = "/Users/youradmin/Desktop/Programmation/utils/movies.txt";
 
-        Graph graphNT = new GraphBuilder()
-                .withMemorySize(1000000)
-                .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/RegularBench"))
-                .withScheduler(new TrampolineScheduler())
-                .build();
-
-
-        graphNT.connect(result -> {
-            DeferCounter counter = graphNT.newCounter(1);
-            try {
-                Review review = new RReview();
-                addingContent(urlMovies, graphNT, 10000, counter, review);
-            } catch (IOException e) {
-                e.printStackTrace();
-                counter.count();
-            }
-            counter.then(() -> graphNT.disconnect(null));
-        });
-
-        /** Graph graphP = new GraphBuilder()
+        /**Graph graphNT = new GraphBuilder()
          .withMemorySize(1000000)
-         .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/PawBench"))
+         .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/RegularBench"))
          .withScheduler(new TrampolineScheduler())
          .build();
 
 
-         graphP.connect(result -> {
-         DeferCounter counter = graphP.newCounter(1);
+         graphNT.connect(result -> {
+         DeferCounter counter = graphNT.newCounter(1);
          try {
-         Review review = new PReview();
-         addingContent(urlMovies, graphP, 10000, counter, review);
+         Review review = new RReview();
+         addingContent(urlMovies, graphNT, 10000, counter, review);
          } catch (IOException e) {
          e.printStackTrace();
          counter.count();
          }
-         counter.then(() -> graphP.disconnect(null));
+         counter.then(() -> graphNT.disconnect(null));
          });*/
 
+        Graph graphP = new GraphBuilder()
+                .withMemorySize(500000)
+                .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/PawBench"))
+                .withPlugin(new PawPlugin())
+                .withPlugin(new MyLittleActionPlugin())
+                .withScheduler(new TrampolineScheduler())
+                .build();
 
+
+        graphP.connect(result -> {
+            DeferCounter counter = graphP.newCounter(1);
+            try {
+                Review review = new PReview();
+                addingContent(urlMovies, graphP, 10000, counter, review);
+            } catch (IOException e) {
+                e.printStackTrace();
+                counter.count();
+            }
+            counter.then(() -> graphP.disconnect(null));
+        });
+
+        /**newTask()
+         .readGlobalIndex(RELATION_INDEX_ENTRY_POINT, NODE_TYPE, String.valueOf(VOCABULARY_NODE))
+         .traverse(RELATION_VOCAB_CACHE_INDEX_DEL)
+         .defineAsGlobalVar("vocabNodes")
+         .thenDo(ctx -> {
+         Node cache = (Node) ctx.variable("vocabNodes").get(0);
+         Node index = (Node) ctx.variable("vocabNodes").get(1);
+         Node vocab = (Node) ctx.variable("vocabNodes").get(2);
+         IntIntMap intIntMap = index.getIntIntMap(INDEXING_NODE_MAP_HASH_ID);
+         EGraph radix = index.getEGraph(INDEXING_NODE_RADIX_TREE);
+         ctx.continueTask();
+         })
+         .execute(graphP, new Callback<TaskResult>() {
+        @Override public void on(TaskResult result) {
+        if (result.exception() != null) {
+        result.exception().printStackTrace();
+        }
+        graphP.disconnect(null);
+        }
+        });*/
     }
 
     private static Pattern regexpProductId = Pattern.compile("product/productId: ([A-Za-z0-9]*)");
@@ -177,26 +198,27 @@ public class Main {
                                 .then(review.addReview("pid", "uid", "profileName", "helpfulnessIn", "helpfulnessOut", "score", "time", "summary", "text"))
                                 .ifThen(
                                         ctx -> (ctx.intVar("i") % saveEvery == 0),
-                                        newTask().pipe(retrieveVocabularyNode())
+                                        newTask()
+                                                .save()
                                                 .thenDo(
                                                         ctx -> {
                                                             //if ((ctx.intVar("i")) % 100 == 0) {
                                                             long timeEnd = System.currentTimeMillis();
-
-                                                            System.out.println("saved " + ctx.intVar("i") + " in " + (timeEnd - timeStart) + " ms");
+                                                            System.out.println("saved " + ctx.intVar("i") + " in " + (timeEnd - timeStart) / 1000 + " ms");
+                                                            //ctx.graph().space().printMarked();
                                                             // Node node = ctx.resultAsNodes().get(0);
                                                             // System.out.println(((RelationIndexed) node.get(RELATION_INDEX_VOCABULARY_TO_TOKENINDEX)).size());
                                                             // }
                                                             ctx.continueTask();
                                                         })
-                                                .save()
                                 )
                 )
                 .save()
                 .execute(graph,
                         taskRes -> {
-                            taskRes.exception().printStackTrace();
-                            System.out.println(taskRes.exception());
+                            if (taskRes.exception() != null) {
+                                taskRes.exception().printStackTrace();
+                            }
                             long timeEnd = System.currentTimeMillis();
                             System.out.println("time to add everything: " + (timeEnd - timeStart));
                             counter.count();

@@ -9,7 +9,6 @@ import static greycat.Tasks.newTask;
 public class RReview extends Review {
 
     public RReview(){
-        this.user = new RUser();
     }
 
 

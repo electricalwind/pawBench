@@ -2,13 +2,15 @@ package amazon.greycat.api;
 
 import greycat.Task;
 import greycat.Type;
-import paw.PawConstants;
 
 import static amazon.greycat.AmazonConstants.*;
 import static greycat.Constants.BEGINNING_OF_TIME;
 import static greycat.Tasks.newTask;
-import static mylittleplugin.MyLittleActions.*;
+import static mylittleplugin.MyLittleActions.executeAtWorldAndTime;
+import static mylittleplugin.MyLittleActions.ifEmptyThen;
 import static paw.PawConstants.NODE_TYPE;
+import static paw.PawConstants.RELATION_INDEX_ENTRY_POINT;
+
 
 public class Product {
 
@@ -16,13 +18,16 @@ public class Product {
 
     private static Task initializeProducts() {
         return newTask()
+                .declareIndex(RELATION_INDEX_ENTRY_POINT,NODE_TYPE)
                 .then(executeAtWorldAndTime("0", String.valueOf(BEGINNING_OF_TIME),
                         newTask()
                                 .createNode()
                                 .setAttribute(NODE_TYPE, Type.INT, NODE_TYPE_PRODUCTS_MAIN)
                                 .timeSensitivity("-1", "0")
-                                .addToGlobalIndex(PawConstants.RELATION_INDEX_ENTRY_POINT, NODE_TYPE)
-                ));
+                                .setAsVar("prod")
+                                .updateIndex(RELATION_INDEX_ENTRY_POINT)
+                ))
+                ;
     }
 
     static Task retrieveProductsMainNode() {
@@ -30,12 +35,11 @@ public class Product {
                 .readVar(PRODUCTS_VAR)
                 .then(ifEmptyThen(
                         newTask()
-                                .readGlobalIndex(PawConstants.RELATION_INDEX_ENTRY_POINT, NODE_TYPE, NODE_TYPE_PRODUCTS_MAIN)
+                                .readIndex(RELATION_INDEX_ENTRY_POINT, NODE_TYPE_PRODUCTS_MAIN)
                                 .then(ifEmptyThen(
                                         initializeProducts()
                                 )).defineAsGlobalVar(PRODUCTS_VAR)
-                ))
-                ;
+                ));
     }
 
 
@@ -54,7 +58,8 @@ public class Product {
                                                 .timeSensitivity("-1", "0")
                                                 .setAsVar("newProduct")
                                                 .readVar(PRODUCTS_VAR)
-                                                .addVarToRelation(sub, "newProduct", PRODUCT_ID)
+                                                .declareLocalIndex(sub,PRODUCT_ID)
+                                                .addVarTo(sub, "newProduct")
                                                 .readVar("newProduct")
                                 ))
                 ));

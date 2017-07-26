@@ -34,7 +34,7 @@
 
     <properties>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <greycat.version>6-SNAPSHOT</greycat.version>
+        <greycat.version>11-SNAPSHOT</greycat.version>
         <header.path>${basedir}/HEADER</header.path>
     </properties>
 
@@ -65,7 +65,12 @@
         <dependency>
             <groupId>com.datathings</groupId>
             <artifactId>greycat-rocksdb</artifactId>
-            <version>6-SNAPSHOT</version>
+            <version>${greycat.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>lu.jimenez.research</groupId>
+            <artifactId>my-little-plugin</artifactId>
+            <version>11-SNAPSHOT</version>
         </dependency>
     </dependencies>
 </project>
