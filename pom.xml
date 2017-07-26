@@ -18,6 +18,20 @@
                     <target>1.8</target>
                 </configuration>
             </plugin>
+            <plugin>
+                <groupId>org.codehaus.mojo</groupId>
+                <artifactId>exec-maven-plugin</artifactId>
+                <version>1.4.0</version>
+                <configuration>
+
+                    <includePluginDependencies>true</includePluginDependencies>
+                    <mainClass>amazon.greycat.Main</mainClass>
+                    <arguments>
+                        <argument>/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/PawBench
+                        </argument>
+                    </arguments>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
