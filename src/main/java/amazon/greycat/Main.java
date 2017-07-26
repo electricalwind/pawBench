@@ -6,6 +6,7 @@ import greycat.DeferCounter;
 import greycat.Graph;
 import greycat.GraphBuilder;
 import greycat.rocksdb.RocksDBStorage;
+import greycat.scheduler.HybridScheduler;
 import greycat.scheduler.TrampolineScheduler;
 import mylittleplugin.MyLittleActionPlugin;
 import paw.graph.PawPlugin;
@@ -47,11 +48,11 @@ public class Main {
          });*/
 
         Graph graphP = new GraphBuilder()
-                .withMemorySize(500000)
+                .withMemorySize(200000)
                 .withStorage(new RocksDBStorage("/Users/youradmin/Desktop/Programmation/utils/meowbench/rocks/PawBench"))
                 .withPlugin(new PawPlugin())
                 .withPlugin(new MyLittleActionPlugin())
-                .withScheduler(new TrampolineScheduler())
+                .withScheduler(new HybridScheduler())
                 .build();
 
 
@@ -204,7 +205,7 @@ public class Main {
                                                         ctx -> {
                                                             //if ((ctx.intVar("i")) % 100 == 0) {
                                                             long timeEnd = System.currentTimeMillis();
-                                                            System.out.println("saved " + ctx.intVar("i") + " in " + (timeEnd - timeStart) / 1000 + " ms");
+                                                            System.out.println("saved " + ctx.intVar("i") + " in " + (timeEnd - timeStart) / 1000 + " s");
                                                             //ctx.graph().space().printMarked();
                                                             // Node node = ctx.resultAsNodes().get(0);
                                                             // System.out.println(((RelationIndexed) node.get(RELATION_INDEX_VOCABULARY_TO_TOKENINDEX)).size());
@@ -220,7 +221,7 @@ public class Main {
                                 taskRes.exception().printStackTrace();
                             }
                             long timeEnd = System.currentTimeMillis();
-                            System.out.println("time to add everything: " + (timeEnd - timeStart));
+                            System.out.println("time to add everything: " + (timeEnd - timeStart) / 1000 + " s");
                             counter.count();
                         }
                 );

@@ -23,9 +23,8 @@ public class PReview extends Review {
     protected Task handleSummaryAndText(String summary, String text) {
         List<Token> summaryTokens = tokenizer.tokenize(summary);
         List<Token> textTokens = tokenizer.tokenize(text);
-        return newTask().pipePar(
-                AddingContent.addTokenizeContentToNode(summaryTokens,"summary","summary"),
-                AddingContent.addTokenizeContentToNode(textTokens,"text","newReview")
-        );
+        return newTask()
+                .pipe(AddingContent.addTokenizeContentToNode(summaryTokens, "summary", "summary"))
+                .pipe(AddingContent.addTokenizeContentToNode(textTokens, "text", "text"));
     }
 }
